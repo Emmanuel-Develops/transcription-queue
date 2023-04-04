@@ -4,7 +4,9 @@ import { GetServerSideProps, NextPage } from "next";
 import { useSession } from "next-auth/react";
 import React, { useState } from "react";
 import { Transcript } from "../../../types";
-import SidebarContentEdit from "@/components/sideBarContentEdit/SidebarContentEdit";
+import SidebarContentEdit, {
+  EditedContent,
+} from "@/components/sideBarContentEdit/SidebarContentEdit";
 import EditTranscript from "@/components/editTranscript/EditTranscript";
 import useTranscripts from "@/hooks/useTranscripts";
 import { useRouter } from "next/router";
@@ -18,10 +20,11 @@ const TranscriptPage = () => {
   const router = useRouter();
   const { id } = router.query;
 
-  const { data, isLoading } = useTranscripts().SingleTranscript(Number(id));
-  const [editedData, setEditedData] = useState(
-    data?.originalContent?.body ?? ""
-  );
+  const {SingleTranscript, updateTranscript} = useTranscripts()
+
+  const { data, isLoading } = SingleTranscript(Number(id));
+  const { mutate, isLoading: saveLoading, isError: saveError } = updateTranscript;
+  const [editedData, setEditedData] = useState(data?.content?.body ?? "");
 
   if (status === "loading") {
     return (
@@ -35,14 +38,37 @@ const TranscriptPage = () => {
     return <h4>You have to Login to view this page</h4>;
   }
 
+  if (!isLoading && !data) {
+    return null;
+  }
+
   // if (data.status === "queued") {
   //   return <h4>Transcript has been claimed</h4>;
   // }
 
-  const handleSave = (editedContent: any) => {
-    return;
+  const handleSave = (editedContent: EditedContent) => {
+    if (!data) return;
+    const { editedCategories, editedDate, editedSpeakers, editedTitle } =
+      editedContent;
+    const content = data.content;
+    // console.log({content})
+    const updatedContent = {
+      ...content,
+      title: editedTitle,
+      speakers: editedSpeakers,
+      categories: editedCategories,
+      date: editedDate,
+      body: editedData,
+    };
+    mutate({content: updatedContent, transcriptId: Number(id)}, {
+      onSettled(data, error, context) {
+        console.log("post data", data)
+        console.log({error, context})
+        // if (data instanceof Error || error) return;
+      },
+    })
   };
-  const handleSubmit = (editedContent: any) => {
+  const handleSubmit = (editedContent: EditedContent) => {
     return;
   };
 

@@ -8,14 +8,16 @@ import CustomDatePicker from "./CustomDatePicker";
 import SelectField from "./SelectField";
 import TextField from "./TextField";
 
-export type RenderProps = {
+type RenderProps = {
   // eslint-disable-next-line no-unused-vars
-  (editedContent: {
-    editedTitle: string;
-    editedSpeakers: string[];
-    editedCategories: string[];
-    editedDate: string;
-  }): React.ReactNode;
+  (editedContent: EditedContent): React.ReactNode;
+};
+
+export type EditedContent = {
+  editedTitle: string;
+  editedSpeakers: string[];
+  editedCategories: string[];
+  editedDate: string;
 };
 
 const SidebarContentEdit = ({
@@ -25,9 +27,9 @@ const SidebarContentEdit = ({
   data: Transcript;
   children?: RenderProps;
 }) => {
-  const [editedTitle, setEditedTitle] = useState("");
-  const [editedSpeakers, setEditedSpeakers] = useState<string[]>([]);
-  const [editedCategories, setEditedCategories] = useState<string[]>([]);
+  const [editedTitle, setEditedTitle] = useState(data.content?.title ?? "");
+  const [editedSpeakers, setEditedSpeakers] = useState<string[]>(data.content.speakers ?? []);
+  const [editedCategories, setEditedCategories] = useState<string[]>(data.content.categories ?? []);
 
   const dateStringFormat = dateFormatGeneral(data?.createdAt, true) as string;
   const [editedDate, setEditedDate] = useState<string>(dateStringFormat || "");
@@ -71,7 +73,7 @@ const SidebarContentEdit = ({
           <Text fontWeight={600} mb={2}>
             Original Media
           </Text>
-          <Link href={data.originalContent?.media || ""}>
+          <Link href={data.content?.media || ""}>
             <Box
               display="inline-block"
               bgColor="red.600"
@@ -90,11 +92,7 @@ const SidebarContentEdit = ({
           <Text fontWeight={600} mb={2}>
             Title
           </Text>
-          <TextField
-            data={data.originalContent?.title ?? ""}
-            editedData={editedTitle}
-            updateData={updateTitle}
-          />
+          <TextField editedData={editedTitle} updateData={updateTitle} />
         </Box>
         <Box>
           <Text fontWeight={600} mb={2}>
@@ -102,7 +100,6 @@ const SidebarContentEdit = ({
           </Text>
           <SelectField
             name="speakers"
-            data={data.originalContent.speakers ?? []}
             editedData={editedSpeakers}
             updateData={updateSpeaker}
           />
@@ -130,7 +127,6 @@ const SidebarContentEdit = ({
           </Text>
           <SelectField
             name="categories"
-            data={data.originalContent.categories ?? []}
             editedData={editedCategories}
             updateData={updateCategories}
           />

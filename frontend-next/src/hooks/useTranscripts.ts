@@ -1,5 +1,6 @@
 import endpoints from "@/api/endpoints";
-import { useQuery } from "react-query";
+import { useMutation, useQuery } from "react-query";
+import { Transcript } from "../../types";
 import axios from "../api/axios";
 
 const useTranscripts = () => {
@@ -9,11 +10,25 @@ const useTranscripts = () => {
       .then((res) => res.data)
       .catch((err) => err);
   };
-  const getSingleTranscripts = async (transcriptId: number): Promise<any> => {
+  const getSingleTranscripts = async (transcriptId: number): Promise<Transcript> => {
     return axios
       .get(endpoints.GET_TRANSCRIPTS_BY_ID(transcriptId || 0))
       .then((res) => res.data)
       .catch((err) => err);
+  };
+
+  const saveEdit = async (body: { content: any, originalContent?: any, transcriptId: number }) => {
+    const { content, originalContent } = body;
+    return axios
+      .put(endpoints.GET_TRANSCRIPTS_BY_ID(body.transcriptId), { content, originalContent })
+      .then((res) => {
+        return res;
+      })
+      .catch((err) => {
+        const errMessage =
+          err?.response?.data?.message || "Please try again later";
+        return new Error(errMessage);
+      });
   };
 
   const transcripts = useQuery("trancripts", getAllTranscripts, {
@@ -29,7 +44,9 @@ const useTranscripts = () => {
       }
     );
 
-  return { transcripts, SingleTranscript };
+  const updateTranscript = useMutation(saveEdit);
+
+  return { transcripts, SingleTranscript, updateTranscript };
 };
 
 export default useTranscripts;
