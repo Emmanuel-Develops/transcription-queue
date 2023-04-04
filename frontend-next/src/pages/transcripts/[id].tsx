@@ -60,13 +60,18 @@ const TranscriptPage = () => {
       date: editedDate,
       body: editedData,
     };
-    mutate({content: updatedContent, transcriptId: Number(id)}, {
-      onSettled(data, error, context) {
-        console.log("post data", data)
-        console.log({error, context})
-        // if (data instanceof Error || error) return;
-      },
-    })
+    mutate(
+      { content: updatedContent, transcriptId: Number(id) },
+      {
+        onSettled(data, error, context) {
+          if (data instanceof Error || error) {
+            alert("Unable to save edits");
+            return;
+          }
+          alert("Saved successfully");
+        },
+      }
+    );
   };
   const handleSubmit = (editedContent: EditedContent) => {
     return;
@@ -86,6 +91,8 @@ const TranscriptPage = () => {
                   colorScheme="orange"
                   variant="outline"
                   onClick={() => handleSave(editedContent)}
+                  loadingText="saving"
+                  isLoading={saveLoading}
                 >
                   Save
                 </Button>
